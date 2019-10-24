@@ -1,0 +1,26 @@
+{
+  "name": "dlan-network",
+  "version": "1.0.0",
+  "description": "The decentralized network sharing solution.",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.3"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seagullbird/dlan-network.git"
+  },
+  "author": "Qingyu Chen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seagullbird/dlan-network/issues"
+  },
+  "homepage": "https://github.com/seagullbird/dlan-network#readme"
+}
