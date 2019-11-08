@@ -78,7 +78,7 @@ contract DlanCore is NFT {
 
         // verify signature
         // reference: https://yos.io/2018/11/16/ethereum-signatures/
-        bytes32 messageHash = keccak256(abi.encodePacked(owner, a)).toEthSignedMessageHash();
+        bytes32 messageHash = keccak256(abi.encodePacked(a)).toEthSignedMessageHash();
         address signer = messageHash.recover(sig);
         require(signer == owner, "Signature doesn't match");
 
