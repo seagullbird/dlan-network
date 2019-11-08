@@ -18,8 +18,6 @@ contract DlanCore is NFT {
         bool exiting;
     }
     mapping(address => Channel) public channels;
-    // to mitigate replay attacks
-    mapping(address => mapping(uint256 => bool)) seenNonces;
     // TODO: hardcode operator address here
     address operatorAddr = address(0x1234);
 
@@ -72,7 +70,7 @@ contract DlanCore is NFT {
         // https://github.com/pipermerriam/ethereum-alarm-clock-docs/blob/master/docs/scheduling.rst
     }
 
-    function challenge(address owner, uint256 a, uint256 nonce, bytes memory sig) public {
+    function challenge(address owner, uint256 a, bytes memory sig) public {
         require(_msgSender() == operatorAddr, "Chanllenge can only be done by the operator");
         require(channels[owner].owner != address(0), "Challenged user doesn't have an NFT token");
         require(channels[owner].exiting, "Challenged user isn't exiting");
@@ -80,11 +78,9 @@ contract DlanCore is NFT {
 
         // verify signature
         // reference: https://yos.io/2018/11/16/ethereum-signatures/
-        bytes32 messageHash = keccak256(abi.encodePacked(owner, a, nonce)).toEthSignedMessageHash();
+        bytes32 messageHash = keccak256(abi.encodePacked(owner, a)).toEthSignedMessageHash();
         address signer = messageHash.recover(sig);
         require(signer == owner, "Signature doesn't match");
-        require(!seenNonces[signer][nonce], "Nonce already seen");
-        seenNonces[signer][nonce] = true;
 
         // update exit
         channels[owner].a = a;
