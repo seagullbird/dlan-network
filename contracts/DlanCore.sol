@@ -78,7 +78,7 @@ contract DlanCore is NFT {
 
         // if the operator is challenging with the same value the user is exiting,
         // no signature verification is required;
-        // This is because in this cause the operator might not have a valid signature for
+        // This is because in this case the operator might not have a valid signature for
         // this value (e.g, when a user deposit v1 then exit with v1, the operator won't have
         // a signature on v1 to perform this challenge)
         if (channels[owner].bal == bal) {
