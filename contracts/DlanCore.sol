@@ -38,22 +38,34 @@ contract DlanCore is NFT {
 
     // Before calling this, call DappToken.approve(<address of DlanCore>, _numberOfDlanTokens)
     function deposit(uint256 _numberOfDlanTokens) public {
-        require(balanceOf(_msgSender()) == 0, "User already has an NFT token");
         require(dappTokenContract.transferFrom(_msgSender(), address(this), _numberOfDlanTokens),
         "Unable to transfer DLAN tokens");
 
-        // use the user address as token id because each user
-        // can hold only one NFT token
-        uint256 newTokenId = uint256(_msgSender());
-        _mint(_msgSender(), newTokenId);
-        channels[_msgSender()] = Channel({
-            owner: _msgSender(),
-            nftTokenId: newTokenId,
-            v: _numberOfDlanTokens,
-            bal: _numberOfDlanTokens,
-            exiting: false
-        });
+        if (balanceOf(_msgSender()) == 0) {
+            // user doesn't have a NFT token yet, mint it
+            // use the user address as token id because each user
+            // can hold only one NFT token
+            uint256 newTokenId = uint256(_msgSender());
+            _mint(_msgSender(), newTokenId);
+            channels[_msgSender()] = Channel({
+                owner: _msgSender(),
+                nftTokenId: newTokenId,
+                v: _numberOfDlanTokens,
+                bal: _numberOfDlanTokens,
+                exiting: false
+            });
+        } else {
+            // user already have a NFT token, top it up
+            channels[_msgSender()].v += _numberOfDlanTokens;
+            // NOTE: no way to update channels[_msgSender()].bal at this moment
+            // for this contract doesn't know how much money the user has already spent.
+            // however channels[_msgSender()].bal will always be updated in start_exit and (possibly)
+            // corrected in challenge, so it's ok we ignore it here.
+        }
 
+        // Deposited event is emitted no matter "first deposit" or "topping up",
+        // and it's always emitting number of tokens added THIS TIME.
+        // Subscribers should update their database accordingly.
         emit Deposited(_msgSender(), _numberOfDlanTokens);
     }
 
