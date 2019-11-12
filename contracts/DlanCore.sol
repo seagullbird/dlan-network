@@ -57,11 +57,12 @@ contract DlanCore is NFT {
         emit Deposited(_msgSender(), _numberOfDlanTokens);
     }
 
-    function start_exit(uint256 a) public {
+    function start_exit(uint256 bal) public {
         require(channels[_msgSender()].owner != address(0), "User doesn't have an NFT token");
         require(!channels[_msgSender()].exiting, "User is already in exiting state");
-        require(a <= channels[_msgSender()].v, "Cannot exit with an a value larger than v");
+        require(bal <= channels[_msgSender()].v, "Cannot exit with an a value larger than v");
         // set exit state
+        uint256 a = channels[_msgSender()].v - bal;
         channels[_msgSender()].a = a;
         channels[_msgSender()].exiting = true;
 
