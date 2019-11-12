@@ -14,7 +14,7 @@ contract DlanCore is NFT {
         address owner;
         uint256 nftTokenId;
         uint256 v;
-        uint256 a;
+        uint256 bal;  // v-a; user's balance, start decresing from v
         bool exiting;
     }
     mapping(address => Channel) public channels;
@@ -29,7 +29,7 @@ contract DlanCore is NFT {
 
     event Exiting(
         address indexed owner,
-        uint256 a
+        uint256 bal
     );
 
     constructor (DappToken _dappTokenContract) public {
@@ -50,7 +50,7 @@ contract DlanCore is NFT {
             owner: _msgSender(),
             nftTokenId: newTokenId,
             v: _numberOfDlanTokens,
-            a: 0,
+            bal: _numberOfDlanTokens,
             exiting: false
         });
 
@@ -62,29 +62,28 @@ contract DlanCore is NFT {
         require(!channels[_msgSender()].exiting, "User is already in exiting state");
         require(bal <= channels[_msgSender()].v, "Cannot exit with an a value larger than v");
         // set exit state
-        uint256 a = channels[_msgSender()].v - bal;
-        channels[_msgSender()].a = a;
+        channels[_msgSender()].bal = bal;
         channels[_msgSender()].exiting = true;
 
-        emit Exiting(_msgSender(), a);
+        emit Exiting(_msgSender(), bal);
         // start waiting
         // https://github.com/pipermerriam/ethereum-alarm-clock-docs/blob/master/docs/scheduling.rst
     }
 
-    function challenge(address owner, uint256 a, bytes memory sig) public {
+    function challenge(address owner, uint256 bal, bytes memory sig) public {
         require(_msgSender() == operatorAddr, "Chanllenge can only be done by the operator");
         require(channels[owner].owner != address(0), "Challenged user doesn't have an NFT token");
         require(channels[owner].exiting, "Challenged user isn't exiting");
-        require(a <= channels[owner].v, "Cannot exit with an a value larger than v");
+        require(bal <= channels[owner].v, "Cannot exit with an a value larger than v");
 
         // verify signature
         // reference: https://yos.io/2018/11/16/ethereum-signatures/
-        bytes32 messageHash = keccak256(abi.encodePacked(a)).toEthSignedMessageHash();
+        bytes32 messageHash = keccak256(abi.encodePacked(bal)).toEthSignedMessageHash();
         address signer = messageHash.recover(sig);
         require(signer == owner, "Signature doesn't match");
 
         // update exit
-        channels[owner].a = a;
+        channels[owner].bal = bal;
 
         // close exit (Temporary)
         // this requires operator to call challenge every time he receives an Exiting event
@@ -93,10 +92,10 @@ contract DlanCore is NFT {
     }
 
     function close_exit(address owner) private {
-        // user gets back v - a
-        dappTokenContract.transfer(owner, channels[owner].v - channels[owner].a);
-        // operator gets a
-        dappTokenContract.transfer(operatorAddr, channels[owner].a);
+        // user gets back bal
+        dappTokenContract.transfer(owner, channels[owner].bal);
+        // operator gets v - bal
+        dappTokenContract.transfer(operatorAddr, channels[owner].v - channels[owner].bal);
         // burn the NFT token
         // token id is the owner's address
         _burn(owner, uint256(owner));
