@@ -19,7 +19,7 @@ contract DlanCore is NFT {
     }
     mapping(address => Channel) public channels;
     // TODO: hardcode operator address here
-    address operatorAddr = address(0x1234);
+    address operatorAddr = address(0x010cBc9930C71f60cA18159A9B250F9Ed416129B);
 
     // Events
     event Deposited(
