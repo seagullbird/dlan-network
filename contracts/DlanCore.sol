@@ -76,6 +76,16 @@ contract DlanCore is NFT {
         require(channels[owner].exiting, "Challenged user isn't exiting");
         require(bal <= channels[owner].v, "Cannot exit with an a value larger than v");
 
+        // if the operator is challenging with the same value the user is exiting,
+        // no signature verification is required;
+        // This is because in this cause the operator might not have a valid signature for
+        // this value (e.g, when a user deposit v1 then exit with v1, the operator won't have
+        // a signature on v1 to perform this challenge)
+        if (channels[owner].bal == bal) {
+            close_exit(owner);
+            return;
+        }
+
         // verify signature
         // reference: https://yos.io/2018/11/16/ethereum-signatures/
         bytes32 messageHash = keccak256(abi.encodePacked(bal)).toEthSignedMessageHash();
