@@ -24,7 +24,7 @@ contract DlanCore is NFT {
     // Events
     event Deposited(
         address indexed owner,
-        uint256 _numberOfDlanTokens
+        uint256 numberOfDlanTokens
     );
 
     event Exiting(
