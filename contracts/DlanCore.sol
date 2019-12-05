@@ -21,6 +21,11 @@ contract DlanCore is NFT {
     // TODO: hardcode operator address here
     address operatorAddr = address(0x010cBc9930C71f60cA18159A9B250F9Ed416129B);
 
+    address[] public providers;
+    uint constant providerLimit = 1;
+    address public masterPubKey;
+
+    bytes32 latestMerkleRoot;
     // Events
     event Deposited(
         address indexed owner,
@@ -30,6 +35,10 @@ contract DlanCore is NFT {
     event Exiting(
         address indexed owner,
         uint256 bal
+    );
+
+    event MerkleUpdated(
+        bytes32 root
     );
 
     constructor (DappToken _dappTokenContract) public {
@@ -121,5 +130,27 @@ contract DlanCore is NFT {
         // burn the NFT token
         // token id is the owner's address
         _burn(owner, uint256(owner));
+    }
+
+    function provider_register() public {
+        require(providerLimit > providers.length, "No more providers can be registered");
+        // register the new provider
+        providers.push(_msgSender());
+        if (providers.length != providerLimit) return;
+
+        merge_keys();
+    }
+    function merge_keys() private {
+        require(masterPubKey == address(0), "Master public key already exists");
+        // turn all provider public keys into one and store it
+        masterPubKey = providers[0];
+    }
+
+    function update_merkle_root(bytes32 merkleRoot, bytes memory sig) public {
+        address signer = merkleRoot.recover(sig);
+        require(signer == masterPubKey, "Signature doesn't match");
+        // update the latest merkle root
+        latestMerkleRoot = merkleRoot;
+        emit MerkleUpdated(latestMerkleRoot);
     }
 }
