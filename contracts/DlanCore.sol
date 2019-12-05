@@ -147,7 +147,8 @@ contract DlanCore is NFT {
     }
 
     function update_merkle_root(bytes32 merkleRoot, bytes memory sig) public {
-        address signer = merkleRoot.recover(sig);
+        bytes32 messageHash = keccak256(abi.encodePacked(merkleRoot)).toEthSignedMessageHash();
+        address signer = messageHash.recover(sig);
         require(signer == masterPubKey, "Signature doesn't match");
         // update the latest merkle root
         latestMerkleRoot = merkleRoot;
