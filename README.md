@@ -28,3 +28,6 @@ Deploy the contracts (in another terminal):
 $ truffle migrate
 ```
 
+It's recommended you run the blockchain on the same machine as the AAA service and the operator service.
+
+ 
